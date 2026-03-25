@@ -12,6 +12,21 @@ datasource db {
   provider = "postgresql"
 }
 
+enum MissionStatus {
+  OPEN
+  STARTED
+  PAUSED
+  COMPLETED
+  CANCELLED
+}
+
+enum SubmissionStatus {
+  PENDING
+  APPROVED
+  PAID
+  REJECTED
+}
+
 model User {
   id          String     @id @default(uuid()) @map("id") // UUID primary key 
   address     String     @unique @map("address") // Stellar wallet address -> unique
@@ -21,9 +36,39 @@ model User {
   createdAt   DateTime   @default(now()) @map("created_at")
   updatedAt   DateTime   @updatedAt @map("updated_at")
 
-  // missions    Mission[] // one-to-many, since users can have many missions.
-  // submissions Submission[] // same as missions
-  // drafts      Draft[] // same as above two
-
+  missions    Mission[]
+  submissions Submission[]
   @@map("users")
+}
+
+model Mission {
+  id        String        @id @default(uuid())
+  title     String
+  status    MissionStatus @default(OPEN)
+
+  // Relation to User
+  userId    String
+  user      User          @relation(fields: [userId], references: [id])
+
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  submissions Submission[]
+
+  @@map("missions")
+}
+
+model Submission {
+  id         String           @id @default(uuid())
+  missionId  String
+  userId     String
+
+  status     SubmissionStatus @default(PENDING)
+  createdAt  DateTime         @default(now())
+
+  //Relations to user
+  mission Mission @relation(fields: [missionId], references: [id])
+  user    User    @relation(fields: [userId], references: [id])
+
+  @@map("submissions")
 }
