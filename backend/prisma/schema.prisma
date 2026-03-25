@@ -87,3 +87,11 @@ model MissionDraft {
   @@index([ownerAddress, updatedAt])
   @@map("mission_drafts")
 }
+model IndexerState {
+  id         Int      @id @default(1) @map("id")
+  lastLedger BigInt   @map("last_ledger")
+  lastCursor String?  @map("last_cursor")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  @@map("indexer_state")
+}
