@@ -28,13 +28,18 @@ enum SubmissionStatus {
 }
 
 model User {
-  id            String   @id @default(uuid())
-  walletAddress String   @unique
-  role          UserRole @default(EARNER)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id          String     @id @default(uuid()) @map("id")
+  address     String     @unique @map("address") // wallet address
+  email       String?    @unique @map("email")
+  displayName String?    @map("display_name")
+  bio         String?    @map("bio")
+  role        UserRole   @default(EARNER)
 
-  createdMissions Mission[]
+  createdAt   DateTime   @default(now()) @map("created_at")
+  updatedAt   DateTime   @updatedAt @map("updated_at")
+
+  // Relationships
+  createdMissions Mission[] @relation("UserMissions")
   submissions     Submission[]
 
   @@map("users")
@@ -51,8 +56,10 @@ model Mission {
   minAssetToken   String?
   minAssetAmount  Decimal?      @db.Decimal(20, 7)
   status          MissionStatus @default(OPEN)
+
   creatorId       String
-  creator         User          @relation(fields: [creatorId], references: [id])
+  creator         User          @relation("UserMissions", fields: [creatorId], references: [id])
+
   submissions     Submission[]
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
@@ -65,10 +72,13 @@ model Submission {
   content   String           @db.Text
   ipfsCid   String
   status    SubmissionStatus @default(PENDING)
+
   missionId String
   mission   Mission          @relation(fields: [missionId], references: [id])
+
   userId    String
   user      User             @relation(fields: [userId], references: [id])
+
   createdAt DateTime         @default(now())
   updatedAt DateTime         @updatedAt
 
